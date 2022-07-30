@@ -1,9 +1,10 @@
 const inquirer = require('inquirer')
-require('console.table')
-const connection = require('./db/connection')
+const { viewDepts } = require('./db')
+require("console.table")
+const db = require('./db')
   
 
-async function questions() {
+function questions() {
     inquirer.prompt([
         {
             type: 'list',
@@ -46,60 +47,105 @@ async function questions() {
        switch(answer.view_add) {
 
         case 'VIEW_DEPARTMENTS':
-           viewDepts();
-           break;
+            db.viewDepts()
+            .then(([rows]) => {
+                let departments = rows
+                console.log('\n')
+                console.table(departments)
+            })
+            .then(() => questions())
+           break
 
         case 'VIEW_ROLES':
-            viewRoles()
+            db.viewRoles()
+            .then(([rows]) => {
+                let roles = rows
+                console.log('\n')
+                console.table(roles)
+            })
+            .then(() => questions())
             break
 
         case 'VIEW_EMPLOYEES':
-            viewEmployees()
+            db.viewEmployees()
+            .then(([rows]) => {
+                let employees = rows
+                console.log('\n')
+                console.table(employees)
+            })
+            .then(() => questions())
             break
 
         case 'ADD_DEPARTMENT':
-            addDept()
+            inquirer.prompt([
+                {
+                    type: 'input',
+                    name: 'deptInput',
+                    message: 'What is the department name?'
+                }
+            ])
+            .then(answer => {
+                let department = answer.deptInput
+                db.addDept(department)
+                db.viewDepts()
+                .then(([rows]) => {
+                    let departments = rows
+                    console.log('\n')
+                    console.table(departments)
+                })
+            })
+            .then(() => questions())
             break
 
         case 'ADD_ROLE':
-            addRole()
+            inquirer.prompt([
+                {
+                    type: 'input',
+                    name: 'roleInput',
+                    message: 'What is the role name?'
+                },
+                {
+                    type: 'input',
+                    name: 'roleSalaryInput',
+                    message: "What is the role's salary?"
+                },
+                {
+                    type: 'input',
+                    name: 'deptInput'
+                }
+            ])
+            db.addRole()
+            .then(([rows]) => {
+                console.log('\n')
+                
+            })
+            .then(() => questions())
             break
 
         case 'ADD_EMPLOYEE':
-            addEmployee()
+            db.addEmployee()
+            .then(([rows]) => {
+                let employee = rows
+                console.log('\n')
+                console.table(employee)
+            })
+            .then(() => questions())
             break
 
         case 'UPDATE_EMPLOYEE':
-           updateRole()
+           db.updateRole()
+           .then(([rows]) => {
+            let role = rows
+            console.log('\n')
+            console.table(role)
+        })
+        .then(() => questions())
             break
 
         default:
             process.exit()
        }
     })
-}
-
-// functions to display database info based on user answer
-function viewDepts() {
-    console.log('1st')
-}
-function viewRoles() {
-    console.log('2nd')
-}
-function viewEmployees() {
-    console.log('3rd')
-}
-function addDept() {
-    console.log('4th')
-}
-function addRole() {
-    console.log('5th')
-}
-function addEmployee() {
-    console.log('6th')
-}
-function updateRole() {
-    console.log('7th')
 }
 
 function init() {
