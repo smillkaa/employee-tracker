@@ -10,10 +10,14 @@ function arrayOfDepts() {
     DB.viewDepts().then(res => {
         let resArray = res[0] // all depts as an array of objects
         resArray.forEach((i) => {
-           array.push(i.department)
+            let id = i.id
+            let dept = i.department
+            let data = id + " " + dept
+           array.push(data)
         })
     })
     return array
+    
 }
 
 function questions() {
@@ -119,7 +123,7 @@ function questions() {
                     message: "What is the role's salary?"
                 },
                 {
-                    // i need the query for view depts for each row to be an item in the array. so the query result has to be an array of rows. 
+                   
                     type: 'list',
                     name: 'deptInput',
                     message: 'Which department does the role belong to?',
@@ -128,7 +132,8 @@ function questions() {
             ])
             .then(answer => {
                 let role = []
-                role.push(answer.roleInput, answer.roleSalaryInput, answer.deptInput)
+                let deptID = answer.deptInput.match(/\d+/) //extracts the id number from the answer
+                role.push(answer.roleInput, answer.roleSalaryInput, deptID)
                 db.addRole(role)
                 db.viewRoles()
                 .then(([rows]) => {
@@ -137,7 +142,7 @@ function questions() {
                     console.table(roles)
                 })
             })
-            // .then(() => questions())
+            .then(() => questions())
             break
 
         case 'ADD_EMPLOYEE':
