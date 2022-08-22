@@ -1,4 +1,5 @@
 const inquirer = require('inquirer')
+const { viewEmployees } = require('./db')
 require("console.table")
 const db = require('./db')
 const DB = require('./db/index')
@@ -54,6 +55,24 @@ function arrayOfManagers() {
     })
     return array
 }
+
+//function to return an array of employees
+function arrayOfEmployees() {
+
+    let array = []
+    DB.viewEmployees().then(res => {
+        let resArray = res[0]
+        resArray.forEach((i) => {
+            let id = i.id
+            let name = i.first_name + " " + i.last_name
+            let data = id + " " + name
+            array.push(data)
+        })
+    })
+    return array
+}
+
+// arrayOfEmployees()
 
 function questions() {
     inquirer.prompt([
@@ -223,36 +242,36 @@ function questions() {
         case 'UPDATE_EMPLOYEE':
             inquirer.prompt([
                 {
-                    type: 'input',
-                    name: 'firstNameInputUpd',
-                    message: "What is the employee's first name?"
-                },
-                {
-                    type: 'input',
-                    name: 'lastNameInputUpd',
-                    message: "What is the employee's last name?"
+                    type: 'list',
+                    name: 'employeeList',
+                    message: "Choose an employee you would like to update:",
+                    choices: arrayOfRoles()
                 },
                 {
                     type: 'list',
                     name: 'emplRoleInputUpd',
                     message: "What is the employee's new role?",
-                    choices: depts
+                    choices: arrayOfRoles()
                 }
             ])
             .then(answer => {
-                let employee = `"${answer.firstNameInputUpd}" + ',' + "${answer.lastNameInputUpd}" + ',' + "${answer.emplRoleInputUpd}"`
-                db.updateRole(employee)
-                .then(([rows]) => {
-                    let role = rows
-                    console.log('\n')
-                    console.table(role)
-                })
+                console.log(answer)
             })
-            .then(() => init())
-            break
+            //     let employee = []
+            //     let roleID = answer.emplRoleInputUpd.match(/\+d/)
+            //     employee.push(roleID)
+            //     db.updateRole(employee)
+            //     .then(([rows]) => {
+            //         let role = rows
+            //         console.log('\n')
+            //         console.table(role)
+            //     })
+            // })
+            // .then(() => init())
+            // break
 
-            default:
-            process.exit()
+            // default:
+            // process.exit()
        }
     })
 }
