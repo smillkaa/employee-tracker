@@ -1,8 +1,20 @@
 const inquirer = require('inquirer')
-const { viewDepts } = require('./db')
 require("console.table")
 const db = require('./db')
+const DB = require('./db/index')
   
+
+// function to return an array of departments
+function arrayOfDepts() {
+    let array = []
+    DB.viewDepts().then(res => {
+        let resArray = res[0] // all depts as an array of objects
+        resArray.forEach((i) => {
+           array.push(i.department)
+        })
+    })
+    return array
+}
 
 function questions() {
     inquirer.prompt([
@@ -49,31 +61,28 @@ function questions() {
         case 'VIEW_DEPARTMENTS':
             db.viewDepts()
             .then(([rows]) => {
-                let departments = rows
                 console.log('\n')
-                console.table(departments)
+                console.table(rows)
             })
-            .then(() => questions())
+            .then(() => init())
            break
 
         case 'VIEW_ROLES':
             db.viewRoles()
             .then(([rows]) => {
-                let roles = rows
                 console.log('\n')
-                console.table(roles)
+                console.table(rows)
             })
-            .then(() => questions())
+            .then(() => init())
             break
 
         case 'VIEW_EMPLOYEES':
             db.viewEmployees()
             .then(([rows]) => {
-                let employees = rows
                 console.log('\n')
-                console.table(employees)
+                console.table(rows)
             })
-            .then(() => questions())
+            .then(() => init())
             break
 
         case 'ADD_DEPARTMENT':
@@ -89,15 +98,15 @@ function questions() {
                 db.addDept(department)
                 db.viewDepts()
                 .then(([rows]) => {
-                    let departments = rows
                     console.log('\n')
-                    console.table(departments)
+                    console.table(rows)
                 })
             })
-            .then(() => questions())
+            .then(() => init())
             break
 
         case 'ADD_ROLE':
+            
             inquirer.prompt([
                 {
                     type: 'input',
@@ -110,39 +119,95 @@ function questions() {
                     message: "What is the role's salary?"
                 },
                 {
-                    type: 'input',
-                    name: 'deptInput'
+                    // i need the query for view depts for each row to be an item in the array. so the query result has to be an array of rows. 
+                    type: 'list',
+                    name: 'deptInput',
+                    message: 'Which department does the role belong to?',
+                    choices: arrayOfDepts()
                 }
             ])
-            db.addRole()
-            .then(([rows]) => {
-                console.log('\n')
-                
+            .then(answer => {
+                let role = []
+                role.push(answer.roleInput, answer.roleSalaryInput, answer.deptInput)
+                db.addRole(role)
+                db.viewRoles()
+                .then(([rows]) => {
+                    let roles = rows
+                    console.log('\n')
+                    console.table(roles)
+                })
             })
-            .then(() => questions())
+            // .then(() => questions())
             break
 
         case 'ADD_EMPLOYEE':
-            db.addEmployee()
-            .then(([rows]) => {
-                let employee = rows
-                console.log('\n')
-                console.table(employee)
+            inquirer.prompt([
+                {
+                    type: 'input',
+                    name: 'firstNameInput',
+                    message: "What is the employee's first name?"
+                },
+                {
+                    type: 'input',
+                    name: 'lastNameInput',
+                    message: "What is the employee's last name?"
+                },
+                {
+                    type: 'input',
+                    name: 'emplRoleInput',
+                    message: "What is the employee's role?"
+                },
+                {
+                    type: 'input',
+                    name: 'managerInput',
+                    message: "Who's the employee's manager?"
+                }
+            ])
+            .then(answer => {
+                let employee = `"${answer.firstNameInput}" + ',' + "${answer.lastNameInput}" + ',' + "${answer.emplRoleInput}" + ',' + "${answer.managerInput}"`
+                db.addEmployee(employee)
+                db.viewEmployees()
+                .then(([rows]) => {
+                    let employees = rows
+                    console.log('\n')
+                    console.table(employees)
+                })
+                .then(() => init())
             })
-            .then(() => questions())
             break
 
         case 'UPDATE_EMPLOYEE':
-           db.updateRole()
-           .then(([rows]) => {
-            let role = rows
-            console.log('\n')
-            console.table(role)
-        })
-        .then(() => questions())
+            inquirer.prompt([
+                {
+                    type: 'input',
+                    name: 'firstNameInputUpd',
+                    message: "What is the employee's first name?"
+                },
+                {
+                    type: 'input',
+                    name: 'lastNameInputUpd',
+                    message: "What is the employee's last name?"
+                },
+                {
+                    type: 'list',
+                    name: 'emplRoleInputUpd',
+                    message: "What is the employee's new role?",
+                    choices: depts
+                }
+            ])
+            .then(answer => {
+                let employee = `"${answer.firstNameInputUpd}" + ',' + "${answer.lastNameInputUpd}" + ',' + "${answer.emplRoleInputUpd}"`
+                db.updateRole(employee)
+                .then(([rows]) => {
+                    let role = rows
+                    console.log('\n')
+                    console.table(role)
+                })
+            })
+            .then(() => init())
             break
 
-        default:
+            default:
             process.exit()
        }
     })
