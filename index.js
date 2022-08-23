@@ -58,13 +58,13 @@ function arrayOfManagers() {
 
 //function to return an array of employees
 function arrayOfEmployees() {
-
     let array = []
     DB.viewEmployees().then(res => {
+
         let resArray = res[0]
         resArray.forEach((i) => {
             let id = i.id
-            let name = i.first_name + " " + i.last_name
+            let name = i.first_name + " " + i
             let data = id + " " + name
             array.push(data)
         })
@@ -245,7 +245,7 @@ function questions() {
                     type: 'list',
                     name: 'employeeList',
                     message: "Choose an employee you would like to update:",
-                    choices: arrayOfRoles()
+                    choices: arrayOfEmployees()
                 },
                 {
                     type: 'list',
@@ -255,23 +255,22 @@ function questions() {
                 }
             ])
             .then(answer => {
-                console.log(answer)
+               
+                let employee = []
+                let roleID = answer.emplRoleInputUpd.match(/\+d/)
+                employee.push(roleID)
+                db.updateRole(employee)
+                .then(([rows]) => {
+                    let role = rows
+                    console.log('\n')
+                    console.table(role)
+                })
             })
-            //     let employee = []
-            //     let roleID = answer.emplRoleInputUpd.match(/\+d/)
-            //     employee.push(roleID)
-            //     db.updateRole(employee)
-            //     .then(([rows]) => {
-            //         let role = rows
-            //         console.log('\n')
-            //         console.table(role)
-            //     })
-            // })
-            // .then(() => init())
-            // break
+            .then(() => init())
+            break
 
-            // default:
-            // process.exit()
+            default:
+            process.exit()
        }
     })
 }
